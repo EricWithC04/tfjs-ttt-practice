@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cell.textContent = currentPlayer === -1 ? 'X' : 'O';
 
         if (checkWinner()) {
-            alert(`${currentPlayer} ha ganado!`);
+            alert(`Jugador con ${currentPlayer === -1 ? 'X' : 'O'} ha ganado!`);
             gameActive = false;
             return;
         }
@@ -42,11 +42,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        currentPlayer = currentPlayer === -1 ? 1 : -1;
+        currentPlayer = 1;
 
         result = await predictPosition(boardState)
         predictedPosition = result.dataSync()
         // console.log(predictedPosition);
+        setTimeout(() => {
+            const position = maxValueWithCondition(predictedPosition, boardState)
+            boardState[position] = currentPlayer;
+            cells[position].textContent = currentPlayer === -1 ? 'X' : 'O';
+            currentPlayer = -1
+        }, 2000)
     }
 
     function checkWinner() {
@@ -100,9 +106,9 @@ function maxValueWithCondition(array1, array2) {
 
     // Recorrer el array ordenado y buscar el valor cuya posición correspondiente en array2 sea 0
     for (let value of sortedArray) {
-        let index = array1.indexOf(value);
-        if (array2[index] === 0) {
-            return value;
+        let i = array1.indexOf(value);
+        if (array2[i] === 0) {
+            return i;
         }
     }
 }

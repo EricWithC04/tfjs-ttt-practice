@@ -89,3 +89,20 @@ function predictPosition(tableGame) {
         })
     })
 }
+
+function maxValueWithCondition(array1, array2) {
+    if (array1.length !== 9 || array2.length !== 9) {
+        throw new Error("Ambos arrays deben tener 9 posiciones.");
+    }
+
+    // Crear una copia del primer array y ordenarlo en orden descendente
+    let sortedArray = [...array1].sort((a, b) => b - a);
+
+    // Recorrer el array ordenado y buscar el valor cuya posición correspondiente en array2 sea 0
+    for (let value of sortedArray) {
+        let index = array1.indexOf(value);
+        if (array2[index] === 0) {
+            return value;
+        }
+    }
+}

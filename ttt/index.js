@@ -2,9 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const board = document.getElementById('board');
     const cells = document.querySelectorAll('.cell');
     const resetButton = document.getElementById('reset');
-    let currentPlayer = 'X';
+    let currentPlayer = -1;
     let gameActive = true;
-    let boardState = Array(9).fill(null);
+    let boardState = Array(9).fill(0);
 
     let predictedPosition = null
 
@@ -23,12 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const cell = e.target;
         const index = parseInt(cell.getAttribute('data-index'));
 
-        if (boardState[index] !== null || !gameActive) {
+        if (boardState[index] !== 0 || !gameActive) {
             return;
         }
 
         boardState[index] = currentPlayer;
-        cell.textContent = currentPlayer;
+        cell.textContent = currentPlayer === -1 ? 'X' : 'O';
 
         if (checkWinner()) {
             alert(`${currentPlayer} ha ganado!`);
@@ -36,13 +36,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (boardState.every(cell => cell !== null)) {
+        if (boardState.every(cell => cell !== 0)) {
             alert('Es un empate!');
             gameActive = false;
             return;
         }
 
-        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        currentPlayer = currentPlayer === -1 ? 1 : -1;
+
+        predictPosition(boardState)
     }
 
     function checkWinner() {
@@ -54,9 +56,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function resetGame() {
-        boardState.fill(null);
+        boardState.fill(0);
         cells.forEach(cell => cell.textContent = '');
-        currentPlayer = 'X';
+        currentPlayer = -1;
         gameActive = true;
     }
 
@@ -64,19 +66,20 @@ document.addEventListener('DOMContentLoaded', () => {
     resetButton.addEventListener('click', resetGame);
 });
 
-
-tf.ready().then(() => {
-    const modelPath = '../model/ttt_model.json'
-    tf.tidy(() => {
-        tf.loadLayersModel(modelPath).then((model) => {
-            // Board states
-            const goForTheKill = tf.tensor([1, 0, 1, 0, -1, -1, -1, 0, 1])
-
-            // Stack states into a shape [3, 9]
-            const match = tf.stack([goForTheKill])
-            const result = model.predict(match)
-            // Log the results
-            result.reshape([9]).print()
+function predictPosition(tableGame) {
+    tf.ready().then(() => {
+        const modelPath = '../model/ttt_model.json'
+        tf.tidy(() => {
+            tf.loadLayersModel(modelPath).then((model) => {
+                // Board states
+                const goForTheKill = tf.tensor(tableGame)
+    
+                // Stack states into a shape [3, 9]
+                const match = tf.stack([goForTheKill])
+                const result = model.predict(match)
+                // Log the results
+                result.reshape([9]).print()
+            })
         })
     })
-})
+}

@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         [2, 4, 6]
     ];
 
-    function handleCellClick(e) {
+    async function handleCellClick(e) {
         const cell = e.target;
         const index = parseInt(cell.getAttribute('data-index'));
 
@@ -44,7 +44,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentPlayer = currentPlayer === -1 ? 1 : -1;
 
-        predictPosition(boardState)
+        result = await predictPosition(boardState)
+        predictedPosition = result.dataSync()
+        // console.log(predictedPosition);
     }
 
     function checkWinner() {
@@ -67,18 +69,22 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function predictPosition(tableGame) {
-    tf.ready().then(() => {
-        const modelPath = '../model/ttt_model.json'
-        tf.tidy(() => {
-            tf.loadLayersModel(modelPath).then((model) => {
-                // Board states
-                const goForTheKill = tf.tensor(tableGame)
-    
-                // Stack states into a shape [3, 9]
-                const match = tf.stack([goForTheKill])
-                const result = model.predict(match)
-                // Log the results
-                result.reshape([9]).print()
+    return new Promise ((resolve, _reject) => {
+        tf.ready().then(() => {
+            const modelPath = '../model/ttt_model.json'
+            tf.tidy(() => {
+                tf.loadLayersModel(modelPath).then((model) => {
+                    // Board states
+                    const goForTheKill = tf.tensor(tableGame)
+        
+                    // Stack states into a shape [3, 9]
+                    const match = tf.stack([goForTheKill])
+                    const result = model.predict(match)
+                    // Log the results
+                    // result.reshape([9]).print()
+
+                    resolve(result)
+                })
             })
         })
     })

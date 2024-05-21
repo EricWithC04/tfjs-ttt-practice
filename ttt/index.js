@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let gameActive = true;
     let boardState = Array(9).fill(null);
 
+    let predictedPosition = null
+
     const winningConditions = [
         [0, 1, 2],
         [3, 4, 5],
@@ -61,3 +63,20 @@ document.addEventListener('DOMContentLoaded', () => {
     cells.forEach(cell => cell.addEventListener('click', handleCellClick));
     resetButton.addEventListener('click', resetGame);
 });
+
+
+tf.ready().then(() => {
+    const modelPath = '../model/ttt_model.json'
+    tf.tidy(() => {
+        tf.loadLayersModel(modelPath).then((model) => {
+            // Board states
+            const goForTheKill = tf.tensor([1, 0, 1, 0, -1, -1, -1, 0, 1])
+
+            // Stack states into a shape [3, 9]
+            const match = tf.stack([goForTheKill])
+            const result = model.predict(match)
+            // Log the results
+            result.reshape([9]).print()
+        })
+    })
+})
